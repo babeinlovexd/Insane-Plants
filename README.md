@@ -1,10 +1,10 @@
 # 🌿 Insane Plant 
 
-Willkommen bei **Insane Plant **! Dies ist eine kompakte 10-Kanal Bewässerungssteuerung auf Basis des ESP8266 (Wemos D1 Mini). Das System erfasst die Bodenfeuchtigkeit von 10 kapazitiven Sensoren über einen Hardware-Multiplexer und steuert 10 unabhängige 5V-Pumpen über ein Schieberegister und MOSFETs. Alles integriert auf einem Custom-PCB, ausgelegt für eine stabile Spannungsversorgung der Pumpen.
+Willkommen bei **Insane Plant**! Dies ist eine kompakte 10-Kanal Bewässerungssteuerung auf Basis des ESP8266 (Wemos D1 Mini). Das System erfasst die Bodenfeuchtigkeit von 10 kapazitiven Sensoren über einen Hardware-Multiplexer und steuert 10 unabhängige 5V-Pumpen über ein Schieberegister und MOSFETs. Alles integriert auf einem Custom-PCB, ausgelegt für eine stabile Spannungsversorgung der Pumpen.
 
 ## 📦 Verzeichnis-Inhalt
 * `/Gerber/` - Die Produktionsdaten für die Platine (ZIP-Datei).
-* `/ESPHome/` - Die `.yaml` Konfigurationsdatei für das ESP8266 Mainboard.
+* `/ESPHome/` - Die Konfigurationsdateien für das ESP8266 Mainboard (`insane-pant-v1.yaml` und `plant_module.yaml`).
 
 ---
 
@@ -21,22 +21,22 @@ Die nötigen SMD- und THT-Bauteile bekommst du problemlos online. Eine genaue St
 ---
 
 ## 💻 Schritt 3: Software (ESPHome)
-Der Wemos D1 Mini übernimmt die Sensor-Auswertung, die Ansteuerung der Schieberegister und die Kommunikation.
+Der Wemos D1 Mini übernimmt die Sensor-Auswertung, die Ansteuerung der Schieberegister und die Logik für das automatische Gießen. Das System nutzt ein modulares Konzept mit einer Hauptkonfiguration und einer Schablone für jede einzelne Pflanze.
 
 1. Binde den ESP8266 in dein **ESPHome** Dashboard ein.
-2. Kopiere den kompletten Inhalt der beiliegenden `.yaml` Datei in deine ESPHome-Konfiguration.
-3. Passe oben im Code deine Zugangsdaten an. Das Projekt nutzt `!secret` für folgende Parameter: `api encryption`, `ota password`, `wifi ssid`, `wifi password` und `ap password`.
-4. Flashe das Board.
+2. Kopiere die Hauptdatei `insane-pant-v1.yaml` sowie die Modul-Schablone `plant_module.yaml` in deinen ESPHome-Konfigurationsordner.
+3. Passe deine Zugangsdaten in deiner `secrets.yaml` an. Das Projekt benötigt folgende Parameter: `api_encryption_key`, `ota_password`, `wifi_ssid`, `wifi_password` und `ap_password`.
+4. Flashe das Board. Das System generiert nun automatisch alle Steuerelemente (Gießmenge, Intervall, Trocken-Schwelle, Kalibrierung) für alle 10 Pflanzen übersichtlich in Home Assistant!
 
 ---
 
 ## 🔌 Schritt 4: Verkabelung & Erster Start
 1. **Sensoren:** Schließe deine kapazitiven Bodenfeuchtesensoren an die entsprechenden Eingänge an.
 2. **Pumpen:** Verbinde deine 10 Wasserpumpen (5V) mit den MOSFET-Ausgängen.
-3. **Temperatur (Optional):** Schließe den DS18B20 Temperatursensor an.
+3. **Temperatur (Optional):** Schließe den DS18B20 Temperatursensor (One-Wire) an.
 4. **Power On:** Verbinde das 5V Netzteil mit der Platine. 
 
-*Funktionsweise: Das System liest nacheinander die Feuchtigkeitswerte der 10 Sensoren über den CD74HC4067 Multiplexer ein. Basierend auf diesen Werten triggert der ESP8266 über das 74HC595 Schieberegister die jeweiligen MOSFETs, welche die Pumpen mit Strom versorgen. Die Schaltung ist dabei auf Spitzenlasten von bis zu 3A ausgelegt.*
+*Funktionsweise: Das System liest nacheinander die Feuchtigkeitswerte der 10 Sensoren über den CD74HC4067 Multiplexer ein. Unterschreitet eine Pflanze die definierte Trocken-Schwelle im gewählten Zeitintervall, triggert der ESP8266 über das 74HC595 Schieberegister automatisch den MOSFET der passenden Pumpe und gießt exakt die eingestellte Milliliter-Menge. Die Schaltung ist dabei auf Spitzenlasten von bis zu 3A ausgelegt.*
 
 ---
 
