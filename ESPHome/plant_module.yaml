@@ -20,10 +20,14 @@ sensor:
     accuracy_decimals: 0
     icon: mdi:water-percent
     filters:
+      # Ignoriert einzelne falsche Messwerte, nimmt den mittleren Wert aus 5 Messungen
+      - median:
+          window_size: 5
+          send_every: 5
+          send_first_at: 1
       - calibrate_linear:
           - 3.0 -> 0.0
           - 1.5 -> 100.0
-      # DER FIX: 0.0f und 100.0f erzwingen den float-Typ für den Compiler!
       - lambda: return clamp(x, 0.0f, 100.0f);
 switch:
   - platform: gpio
@@ -34,6 +38,10 @@ switch:
       sn74hc595: pumpen_hub
       number: ${sr_pin}
     restore_mode: ALWAYS_OFF
+    # FALLBACK: Pumpe schaltet nach spätestens 60s hart ab, egal was passiert
+    on_turn_on:
+      - delay: 60s
+      - switch.turn_off: pump_p${var_num}
 
 number:
   - platform: template
@@ -116,12 +124,14 @@ script:
 interval:
   - interval: 1h
     then:
+      # Jede Pflanze wartet ihren Index * 20 Sekunden, bevor sie prüft/gießt.
+      # P1 startet bei Sekunde 20, P2 bei 40, P10 bei 200...
+      - delay: !lambda "return ${var_num} * 20000;"
       - lambda: |-
           id(p${var_num}_timer_h) += 1;
           if (id(p${var_num}_timer_h) >= id(p${var_num}_interval).state) {
             id(p${var_num}_timer_h) = 0;
             
-            // NEUE LOGIK: Wenn Prozent < Schwelle = Trocken!
             if (id(sensor_p${var_num}).state < id(p${var_num}_threshold).state) {
               id(water_p${var_num}).execute();
             }
