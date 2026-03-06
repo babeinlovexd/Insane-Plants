@@ -1,4 +1,4 @@
-# 🛠️ Contributing zu Insane Plant v1
+# 🛠️ Contributing zu Insane Plant 
 
 Danke für dein Interesse, zu diesem Projekt beizutragen. Egal ob Bugfix in der ESPHome-Konfiguration oder Verbesserungen am Platinen-Layout – Beteiligung ist willkommen. 
 
