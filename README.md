@@ -24,7 +24,7 @@ Die nötigen SMD- und THT-Bauteile bekommst du problemlos online. Eine genaue St
 Der Wemos D1 Mini übernimmt die Sensor-Auswertung, die Ansteuerung der Schieberegister und die Logik für das automatische Gießen. Das System nutzt ein modulares Konzept mit einer Hauptkonfiguration und einer Schablone für jede einzelne Pflanze.
 
 1. Binde den ESP8266 in dein **ESPHome** Dashboard ein.
-2. Kopiere die Hauptdatei `insane-pant.yaml` sowie die Modul-Schablone `plant_module.yaml` in deinen ESPHome-Konfigurationsordner.
+2. Kopiere die Hauptdatei `insane-plant.yaml` sowie die Modul-Schablone `plant_module.yaml` in deinen ESPHome-Konfigurationsordner.
 3. Passe deine Zugangsdaten in deiner `secrets.yaml` an. Das Projekt benötigt folgende Parameter: `api_encryption_key`, `ota_password`, `wifi_ssid`, `wifi_password` und `ap_password`.
 4. Flashe das Board. Das System generiert nun automatisch alle Steuerelemente (Gießmenge, Intervall, Trocken-Schwelle, Kalibrierung) für alle 10 Pflanzen übersichtlich in Home Assistant!
 
