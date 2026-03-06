@@ -1,0 +1,128 @@
+# ==========================================
+# MODULE: plant_module.yaml
+# Schablone für Insane Plant v1
+# ==========================================
+# Globale Variable als Stundenzähler für diese spezifische Pflanze
+globals:
+  - id: p${var_num}_timer_h
+    type: int
+    initial_value: '0'
+
+sensor:
+  - platform: cd74hc4067
+    name: "P${var_num} Feuchtigkeit"
+    id: sensor_p${var_num}
+    cd74hc4067_id: sensor_mux
+    number: ${mux_pin}
+    sensor: mux_adc_reader 
+    update_interval: 60s
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    icon: mdi:water-percent
+    filters:
+      - calibrate_linear:
+          - 3.0 -> 0.0
+          - 1.5 -> 100.0
+      # DER FIX: 0.0f und 100.0f erzwingen den float-Typ für den Compiler!
+      - lambda: return clamp(x, 0.0f, 100.0f);
+switch:
+  - platform: gpio
+    name: "P${var_num} Pumpe Manuell"
+    id: pump_p${var_num}
+    internal: true
+    pin:
+      sn74hc595: pumpen_hub
+      number: ${sr_pin}
+    restore_mode: ALWAYS_OFF
+
+number:
+  - platform: template
+    name: "P${var_num} Menge (ml)"
+    id: p${var_num}_amount
+    min_value: 10
+    max_value: 500
+    step: 10
+    optimistic: true
+    restore_value: true
+    entity_category: config
+    icon: mdi:water
+    mode: box  # <--- Macht aus dem Slider ein sauberes Textfeld
+
+  - platform: template
+    # DER FIX: Schrägstrich entfernt
+    name: "P${var_num} Kalibrierung (ml pro 10s)"
+    id: p${var_num}_calib
+    min_value: 1
+    max_value: 200
+    step: 1
+    optimistic: true
+    restore_value: true
+    entity_category: config
+    icon: mdi:scale
+    mode: box
+
+  - platform: template
+    name: "P${var_num} Trocken-Schwelle (%)"
+    id: p${var_num}_threshold
+    min_value: 0
+    max_value: 100
+    step: 1
+    optimistic: true
+    restore_value: true
+    entity_category: config
+    icon: mdi:gauge
+    mode: box  # <--- Macht aus dem Slider ein sauberes Textfeld
+
+  - platform: template
+    name: "P${var_num} Prüf-Intervall (h)"
+    id: p${var_num}_interval
+    min_value: 1
+    max_value: 336
+    step: 1
+    optimistic: true
+    restore_value: true
+    entity_category: config
+    icon: mdi:clock-check-outline
+    mode: box  # <--- Macht aus dem Slider ein sauberes Textfeld
+
+button:
+  - platform: template
+    name: "P${var_num} Test-Lauf (10s)"
+    id: btn_calib_p${var_num}
+    on_press:
+      - switch.turn_on: pump_p${var_num}
+      - delay: 10s
+      - switch.turn_off: pump_p${var_num}
+
+  - platform: template
+    name: "P${var_num} Gießen (Auto)"
+    id: btn_water_p${var_num}
+    on_press:
+      - script.execute: water_p${var_num}
+
+script:
+  - id: water_p${var_num}
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: 'return id(p${var_num}_calib).state > 0 && id(p${var_num}_amount).state > 0;'
+          then:
+            - switch.turn_on: pump_p${var_num}
+            - delay: !lambda |-
+                return (id(p${var_num}_amount).state / id(p${var_num}_calib).state) * 10.0 * 1000.0;
+            - switch.turn_off: pump_p${var_num}
+
+interval:
+  - interval: 1h
+    then:
+      - lambda: |-
+          id(p${var_num}_timer_h) += 1;
+          if (id(p${var_num}_timer_h) >= id(p${var_num}_interval).state) {
+            id(p${var_num}_timer_h) = 0;
+            
+            // NEUE LOGIK: Wenn Prozent < Schwelle = Trocken!
+            if (id(sensor_p${var_num}).state < id(p${var_num}_threshold).state) {
+              id(water_p${var_num}).execute();
+            }
+          }

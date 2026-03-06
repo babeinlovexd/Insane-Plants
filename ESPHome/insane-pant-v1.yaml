@@ -1,0 +1,123 @@
+# ====================================================================================
+#   PROJECT:    Insane Plant v1
+#   AUTHOR:     Christopher
+#   HARDWARE:   ESP8266 (Wemos D1 Mini)
+#   FEATURES:   10-Channel Auto-Watering System (Capacitive Moisture & 5V Pumps)
+#   COMPONENTS: 1x CD74HC4067 (16-Ch Mux), 2x SN74HC595 (8-Bit Shift Register), 1x DS18B20
+# ====================================================================================
+#
+#   ESP8266 PINOUT & ROUTING MAP:
+#   ----------------------------------------------------------------------------------
+#   PIN   | GPIO | DIR | COMPONENT          | FUNCTION             | PCB ROUTING / NOTE
+#   ----------------------------------------------------------------------------------
+#   A0    | ADC  | IN  | CD74HC4067 (Mux)   | SIG (Pin 1)          | Analog Input Reader
+#   D1    | 5    | OUT | SN74HC595 (Reg 1)  | MOSI / SER (Pin 14)  | SPI Data
+#   D2    | 4    | OUT | SN74HC595 (Reg 1)  | CLK / SRCLK (Pin 11) | SPI Clock
+#   D3    | 0    | OUT | SN74HC595 (Reg 1)  | LATCH / RCLK (Pin 12)| SPI Latch (Boot OK)
+#   D4    | 2    | I/O | DS18B20 (Temp)     | 1-Wire Data          | Needs 4.7k Pull-Up
+#   D5    | 14   | OUT | CD74HC4067 (Mux)   | S0 (Pin 10)          | Address Bit 0
+#   D6    | 12   | OUT | CD74HC4067 (Mux)   | S1 (Pin 11)          | Address Bit 1
+#   D7    | 13   | OUT | CD74HC4067 (Mux)   | S2 (Pin 14)          | Address Bit 2
+#   D8    | 15   | OUT | CD74HC4067 (Mux)   | S3 (Pin 13)          | Address Bit 3 (Must be LOW at boot)
+#   ----------------------------------------------------------------------------------
+#   NOTES:
+#   - SN74HC595 Cascading: Reg 1 Pin 9 (Q7') -> Reg 2 Pin 14 (SER)
+#   - CD74HC4067 EN (Pin 15) hardwired to GND.
+#   - SN74HC595 OE (Pin 13) hardwired to GND, SRCLR (Pin 10) hardwired to VCC.
+# ====================================================================================
+substitutions:
+  # Hardware Pins
+  mux_s0: GPIO14 
+  mux_s1: GPIO12 
+  mux_s2: GPIO13 
+  mux_s3: GPIO15 
+  sr_data: GPIO5 # MOSI für SPI
+  sr_clk:  GPIO4 # CLK für SPI
+  sr_lat:  GPIO0 
+  onewire: GPIO2 
+  adc_pin: A0    # Analoger Eingang für den ESP8266
+
+esphome:
+  name: insane-plant-v1
+  friendly_name: "Insane Plant v1"
+  project:
+    name: "babeinlovexd.insane_plant"
+    version: "1.0"
+
+esp8266:
+  board: d1_mini
+
+# --- SECRETS & SICHERHEIT ---
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "Insane-Plant-Fallback"
+    password: !secret ap_password
+
+# --- HARDWARE HUB DEFINITIONEN ---
+# KORRIGIERT: Dallas wurde durch den neuen One-Wire Bus ersetzt
+one_wire:
+  - platform: gpio
+    pin: ${onewire}
+
+spi:
+  clk_pin: ${sr_clk}
+  mosi_pin: ${sr_data}
+
+sn74hc595:
+  - id: pumpen_hub
+    type: spi
+    latch_pin: ${sr_lat}
+    sr_count: 2
+
+cd74hc4067:
+  - id: sensor_mux
+    pin_s0: ${mux_s0}
+    pin_s1: ${mux_s1}
+    pin_s2: ${mux_s2}
+    pin_s3: ${mux_s3}
+
+# --- TEMPERATUR & OFFSET ---
+number:
+  - platform: template
+    name: "Temperatur Offset"
+    id: temp_offset
+    min_value: -10.0
+    max_value: 10.0
+    step: 0.1
+    optimistic: true
+    restore_value: true
+    entity_category: config
+
+sensor:
+  - platform: dallas_temp
+    index: 0
+    name: "Lufttemperatur"
+    filters:
+      - lambda: return x + id(temp_offset).state;
+
+  - platform: adc
+    id: mux_adc_reader
+    pin: A0
+
+# --- DIE 10 PFLANZEN MODULE ---
+packages:
+  p1:  !include { file: plant_module.yaml, vars: { var_num: "1",  mux_pin: "0", sr_pin: "0" } }
+  p2:  !include { file: plant_module.yaml, vars: { var_num: "2",  mux_pin: "1", sr_pin: "1" } }
+  p3:  !include { file: plant_module.yaml, vars: { var_num: "3",  mux_pin: "2", sr_pin: "2" } }
+  p4:  !include { file: plant_module.yaml, vars: { var_num: "4",  mux_pin: "3", sr_pin: "3" } }
+  p5:  !include { file: plant_module.yaml, vars: { var_num: "5",  mux_pin: "4", sr_pin: "4" } }
+  p6:  !include { file: plant_module.yaml, vars: { var_num: "6",  mux_pin: "5", sr_pin: "5" } }
+  p7:  !include { file: plant_module.yaml, vars: { var_num: "7",  mux_pin: "6", sr_pin: "6" } }
+  p8:  !include { file: plant_module.yaml, vars: { var_num: "8",  mux_pin: "7", sr_pin: "7" } }
+  p9:  !include { file: plant_module.yaml, vars: { var_num: "9",  mux_pin: "8", sr_pin: "8" } }
+  p10: !include { file: plant_module.yaml, vars: { var_num: "10", mux_pin: "9", sr_pin: "9" } }
