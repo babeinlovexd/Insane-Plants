@@ -1,10 +1,10 @@
 # 🌿 Insane Plant 
 
-Willkommen bei **Insane Plant**! Dies ist eine kompakte 10-Kanal Bewässerungssteuerung auf Basis des ESP8266 (Wemos D1 Mini). Das System erfasst die Bodenfeuchtigkeit von 10 kapazitiven Sensoren über einen Hardware-Multiplexer und steuert 10 unabhängige 5V-Pumpen über ein Schieberegister und MOSFETs. Alles integriert auf einem Custom-PCB, ausgelegt für eine stabile Spannungsversorgung der Pumpen.
+Willkommen bei **Insane Plant**! Dies ist eine kompakte 10-Kanal Bewässerungssteuerung auf Basis des ESP8266 (Wemos D1 Mini). Das System erfasst die Bodenfeuchtigkeit von 10 kapazitiven Sensoren über einen Hardware-Multiplexer und steuert 10 unabhängige 5V-Pumpen über zwei Schieberegister und MOSFETs. Alles integriert auf einem Custom-PCB, ausgelegt für eine stabile Spannungsversorgung der Pumpen.
 
 ## 📦 Verzeichnis-Inhalt
 * `/Gerber/` - Die Produktionsdaten für die Platine (ZIP-Datei).
-* `/ESPHome/` - Die Konfigurationsdateien für das ESP8266 Mainboard (`insane-pant-v1.yaml` und `plant_module.yaml`).
+* `/ESPHome/` - Die Konfigurationsdateien für das ESP8266 Mainboard (`insane-plant.yaml` und `plant_module.yaml`).
 
 ---
 
@@ -36,7 +36,7 @@ Der Wemos D1 Mini übernimmt die Sensor-Auswertung, die Ansteuerung der Schieber
 3. **Temperatur (Optional):** Schließe den DS18B20 Temperatursensor (One-Wire) an.
 4. **Power On:** Verbinde das 5V Netzteil mit der Platine. 
 
-*Funktionsweise: Das System liest nacheinander die Feuchtigkeitswerte der 10 Sensoren über den CD74HC4067 Multiplexer ein. Unterschreitet eine Pflanze die definierte Trocken-Schwelle im gewählten Zeitintervall, triggert der ESP8266 über das 74HC595 Schieberegister automatisch den MOSFET der passenden Pumpe und gießt exakt die eingestellte Milliliter-Menge. Die Schaltung ist dabei auf Spitzenlasten von bis zu 3A ausgelegt.*
+*Funktionsweise: Das System liest nacheinander die Feuchtigkeitswerte der 10 Sensoren über den CD74HC4067 Multiplexer ein. Unterschreitet eine Pflanze die definierte Trocken-Schwelle im gewählten Zeitintervall, triggert der ESP8266 über die 74HC595 Schieberegister automatisch den MOSFET der passenden Pumpe und gießt exakt die eingestellte Milliliter-Menge. Die Schaltung ist dabei auf Spitzenlasten von bis zu 3A ausgelegt.*
 
 ---
 
@@ -47,7 +47,7 @@ Der Wemos D1 Mini übernimmt die Sensor-Auswertung, die Ansteuerung der Schieber
 | :--- | :--- | :--- |
 | **Wemos D1 Mini** | 1 | Das ESP8266 Mainboard |
 | **CD74HC4067** | 1 | 16-Kanal-Multiplexer zum Auslesen der Sensoren (SOIC-24) |
-| **SN74HC595** | 1 | Schieberegister zur Steuerung der MOSFETs (SOIC-16) |
+| **SN74HC595** | 2 | Schieberegister zur Steuerung der MOSFETs (SOIC-16) |
 
 ### ⚡ Leistungselektronik
 | Bauteil / Bezeichnung | Menge | Beschreibung |
