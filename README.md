@@ -1,7 +1,8 @@
-# 🌿 Insane Plant 
+# 🌿 Insane Plant  
+<image src="/ip.png" width="300">
 
 [🇬🇧 English Version](README_en.md)
-
+  
 Willkommen bei **Insane Plant**! Dies ist eine kompakte 10-Kanal Bewässerungssteuerung auf Basis des ESP8266 (Wemos D1 Mini). Das System erfasst die Bodenfeuchtigkeit von 10 kapazitiven Sensoren über einen Hardware-Multiplexer und steuert 10 unabhängige 5V-Pumpen über zwei Schieberegister und MOSFETs. Alles integriert auf einem Custom-PCB, ausgelegt für eine stabile Spannungsversorgung der Pumpen.
 
 ## ✨ Was ist Insane Plant? (Hardware & Features)
