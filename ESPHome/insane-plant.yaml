@@ -42,15 +42,27 @@ esphome:
   friendly_name: "Insane Plant"
   project:
     name: "babeinlovexd.insane_plant"
-    version: "1.0"
+    version: "1.4"
 
 esp8266:
   board: d1_mini
 
+logger:
+  baud_rate: 0
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/babeinlovexd/insane_package_report
+    components: [ insane_package_report ]
+    refresh: 1s
+
+insane_package_report:
 # --- SECRETS & SICHERHEIT ---
 api:
   encryption:
     key: !secret api_encryption_key
+  homeassistant_services: true
 
 ota:
   - platform: esphome
@@ -59,9 +71,12 @@ ota:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+  min_auth_mode: WPA2  #
   ap:
     ssid: "Insane-Plant-Fallback"
     password: !secret ap_password
+
+captive_portal:
 
 # --- HARDWARE HUB DEFINITIONEN ---
 one_wire:
@@ -85,8 +100,22 @@ cd74hc4067:
     pin_s2: ${mux_s2}
     pin_s3: ${mux_s3}
 
-# --- TEMPERATUR & OFFSET ---
+# --- Saison Faktor ---
 number:
+  - platform: template
+    name: "Globaler Saison-Faktor"
+    id: season_multiplier
+    min_value: 0.1
+    max_value: 2.5
+    step: 0.1
+    initial_value: 1.0
+    optimistic: true
+    restore_value: true
+    entity_category: config
+    icon: mdi:sun-thermometer
+
+# --- TEMPERATUR & OFFSET ---
+
   - platform: template
     name: "Temperatur Offset"
     id: temp_offset
@@ -108,7 +137,22 @@ sensor:
     id: mux_adc_reader
     pin: A0
 
-# --- DIE 10 PFLANZEN MODULE ---
+# --- WASSERTANK SENSOR (Schwimmerschalter an D0) ---
+binary_sensor:
+  - platform: gpio
+    name: "Wassertank Status"
+    id: tank_empty_sensor
+    pin:
+      number: GPIO16
+      mode: INPUT_PULLDOWN_16
+      inverted: true  # Kehrt das Signal direkt am Hardware-Pin um
+    device_class: problem
+
+# --- DIE PFLANZEN MODULE ---
+# 💡 Setup-Tipp: Du hast weniger als 10 Pflanzen? 
+# Setze einfach ein "#" (Kommentar) vor die Zeilen der Pflanzen, die du nicht brauchst.
+# Wenn du z. B. nur 3 Pflanzen hast, kommentiere p4 bis p10 aus. 
+# Das spart Bauteile auf der Platine, entlastet den ESP8266 und hält dein Dashboard sauber!
 packages:
   p1:  !include { file: plant_module.yaml, vars: { var_num: "1",  mux_pin: "0", sr_pin: "0" } }
   p2:  !include { file: plant_module.yaml, vars: { var_num: "2",  mux_pin: "1", sr_pin: "1" } }

@@ -132,13 +132,16 @@ script:
     then:
       - if:
           condition:
-            lambda: 'return id(p${var_num}_calib).state > 0 && id(p${var_num}_amount).state > 0;'
+            lambda: 'return id(p${var_num}_calib).state > 0 && id(p${var_num}_amount).state > 0 && !id(tank_empty_sensor).state;'
           then:
             - lambda: 'id(p${var_num}_last_watered_h) = 0;'
             - switch.turn_on: pump_p${var_num}
             - delay: !lambda |-
-                return (id(p${var_num}_amount).state / id(p${var_num}_calib).state) * 10.0 * 1000.0;
+                float base_time = (id(p${var_num}_amount).state / id(p${var_num}_calib).state) * 10.0;
+                return base_time * id(season_multiplier).state * 1000.0;
             - switch.turn_off: pump_p${var_num}
+          else:
+            - logger.log: "Befeuchtung abgebrochen: Wassertank leer!"
 
 interval:
   - interval: 1h
