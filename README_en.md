@@ -12,6 +12,8 @@ Welcome to **Insane Plant**! This is a compact 10-channel irrigation controller 
 * **Hand-Soldering Friendly SMD Design:** The board uses the 1210 format for passive components, significantly simplifying hand soldering, even for beginners.
 * **Fully Automatic Logic in ESPHome:** The system utilizes a modular concept in ESPHome. For each plant, controls (water amount, interval, dry threshold, calibration) and smart status sensors (time since last watering & countdown to next check) are automatically generated in Home Assistant.
 * **Temperature Monitoring:** An optional DS18B20 temperature sensor (One-Wire) can be connected directly to the board.
+* **Global Season Scaling:** A global multiplier allows you to adjust the watering amount for all plants simultaneously according to the season (e.g. summer/winter), without having to change each plant individually.
+* **Scalable System:** Do you need fewer than 10 plants? The system is designed so that you can simply comment out unneeded plants in the configuration to save components and ESP resources.
 
   > **💡 How it works:** The system sequentially reads the moisture values of the 10 sensors via the multiplexer. If a plant falls below the defined dry threshold within the selected time interval, the ESP8266 automatically triggers the MOSFET of the corresponding pump via the shift registers and waters exactly the set milliliter amount.
 
@@ -64,6 +66,8 @@ For security reasons, this project uses externalized passwords.
    ap_password: "YOUR_FALLBACK_HOTSPOT_PASSWORD"
    ```
 3. Copy the main file `insane-plant.yaml` as well as the module template `plant_module.yaml` from the `ESPHome/` folder into your ESPHome configuration folder.
+
+   > **💡 Setup Tip:** If you want to water fewer than 10 plants, you can easily comment out the unneeded plants in the `insane-plant.yaml` file under the `packages:` section by adding a `#` in front of them.
 4. Add the Wemos D1 Mini to your ESPHome Dashboard.
 5. Flash the board. The system will now automatically generate all controls in Home Assistant.
 
