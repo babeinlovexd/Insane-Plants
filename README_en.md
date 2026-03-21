@@ -1,6 +1,6 @@
 # 🌿 Insane Plant
 
-[🇩🇪 Deutsche Version](README.md) | [🇬🇧 English Version](README_en.md)
+[🇩🇪 Deutsche Version](README.md)
 
 Welcome to **Insane Plant**! This is a compact 10-channel irrigation controller based on the ESP8266 (Wemos D1 Mini). The system captures soil moisture from 10 capacitive sensors via a hardware multiplexer and controls 10 independent 5V pumps using two shift registers and MOSFETs. Everything is integrated onto a custom PCB, designed for a stable power supply to the pumps.
 
