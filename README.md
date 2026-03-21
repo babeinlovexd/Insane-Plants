@@ -12,6 +12,8 @@ Willkommen bei **Insane Plant**! Dies ist eine kompakte 10-Kanal Bewässerungsst
 * **Handlötfreundliches SMD-Design:** Die Platine nutzt für passive Bauteile das 1210-Format, was das Handlöten auch für Anfänger deutlich vereinfacht.
 * **Vollautomatische Logik in ESPHome:** Das System nutzt ein modulares Konzept in ESPHome. Für jede Pflanze werden automatisch Steuerelemente (Gießmenge, Intervall, Trocken-Schwelle, Kalibrierung) sowie smarte Status-Sensoren (Zeit seit letzter Gießung & Countdown zur nächsten Prüfung) in Home Assistant generiert.
 * **Temperaturüberwachung:** Ein optionaler DS18B20 Temperatursensor (One-Wire) kann direkt auf dem Board angeschlossen werden.
+* **Globaler Saison-Faktor:** Ein globaler Multiplikator erlaubt es, die Gießmenge für alle Pflanzen gleichzeitig an die Jahreszeit (z.B. Sommer/Winter) anzupassen, ohne jede Pflanze einzeln ändern zu müssen.
+* **Skalierbares System:** Brauchst du weniger als 10 Pflanzen? Das System ist so aufgebaut, dass du nicht benötigte Pflanzen einfach in der Konfiguration auskommentieren kannst, um Bauteile und ESP-Ressourcen zu sparen.
 
   > **💡 Funktionsweise:** Das System liest nacheinander die Feuchtigkeitswerte der 10 Sensoren über den Multiplexer ein. Unterschreitet eine Pflanze die definierte Trocken-Schwelle im gewählten Zeitintervall, triggert der ESP8266 über die Schieberegister automatisch den MOSFET der passenden Pumpe und gießt exakt die eingestellte Milliliter-Menge.
 
@@ -64,6 +66,8 @@ Aus Sicherheitsgründen nutzt dieses Projekt ausgelagerte Passwörter.
    ap_password: "DEIN_FALLBACK_HOTSPOT_PASSWORT"
    ```
 3. Kopiere die Hauptdatei `insane-plant.yaml` sowie die Modul-Schablone `plant_module.yaml` aus dem Ordner `ESPHome/` in deinen ESPHome-Konfigurationsordner.
+
+   > **💡 Setup-Tipp:** Wenn du weniger als 10 Pflanzen gießen möchtest, kannst du die nicht benötigten Pflanzen in der Datei `insane-plant.yaml` unter dem Punkt `packages:` durch ein vorangestelltes `#` einfach auskommentieren.
 4. Binde den Wemos D1 Mini in dein ESPHome Dashboard ein.
 5. Flashe das Board. Das System generiert nun automatisch alle Steuerelemente in Home Assistant.
 
