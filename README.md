@@ -1,104 +1,77 @@
-# 🌿 Insane Plant  
-<image src="/ip.png" width="300">
+<p align="center">
+  <a href="https://github.com/babeinlovexd"><img src="https://raw.githubusercontent.com/babeinlovexd/babeinlovexd/main/bxd-github-header.svg" width="520" alt="BxD / BabeinlovexD"></a>
+</p>
 
-[🇬🇧 English Version](README_en.md)
-  
-Willkommen bei **Insane Plant**! Dies ist eine kompakte 10-Kanal Bewässerungssteuerung auf Basis des ESP8266 (Wemos D1 Mini). Das System erfasst die Bodenfeuchtigkeit von 10 kapazitiven Sensoren über einen Hardware-Multiplexer und steuert 10 unabhängige 5V-Pumpen über zwei Schieberegister und MOSFETs. Alles integriert auf einem Custom-PCB, ausgelegt für eine stabile Spannungsversorgung der Pumpen.
+# Insane Plants
 
-## ✨ Was ist Insane Plant? (Hardware & Features)
+[English](README_en.md) · [Fragen & Fehler](https://github.com/babeinlovexd/Insane-Plants/issues) · [Releases](https://github.com/babeinlovexd/Insane-Plants/releases)
 
-* **10-Kanal Bewässerung:** Das System kann bis zu 10 Pflanzen völlig unabhängig voneinander bewässern.
-* **Intelligente Sensorauswertung:** Die Bodenfeuchtigkeit wird über 10 kapazitive Sensoren erfasst, die durch einen Hardware-Multiplexer (CD74HC4067) effizient von nur einem analogen Eingang des ESP8266 ausgelesen werden.
-* **Leistungsstarke Pumpensteuerung:** 10 unabhängige 5V-Tauchpumpen werden über zwei Schieberegister (SN74HC595) und leistungsstarke N-Channel MOSFETs (AO3400) gesteuert. Die Schaltung ist auf Spitzenlasten von bis zu 3A ausgelegt.
-* **Handlötfreundliches SMD-Design:** Die Platine nutzt für passive Bauteile das 1210-Format, was das Handlöten auch für Anfänger deutlich vereinfacht.
-* **Vollautomatische Logik in ESPHome:** Das System nutzt ein modulares Konzept in ESPHome. Für jede Pflanze werden automatisch Steuerelemente (Gießmenge, Intervall, Trocken-Schwelle, Kalibrierung) sowie smarte Status-Sensoren (Zeit seit letzter Gießung & Countdown zur nächsten Prüfung) in Home Assistant generiert.
-* **Temperaturüberwachung:** Ein optionaler DS18B20 Temperatursensor (One-Wire) kann direkt auf dem Board angeschlossen werden.
-* **Globaler Saison-Faktor:** Ein globaler Multiplikator erlaubt es, die Gießmenge für alle Pflanzen gleichzeitig an die Jahreszeit (z.B. Sommer/Winter) anzupassen, ohne jede Pflanze einzeln ändern zu müssen.
-* **Skalierbares System:** Brauchst du weniger als 10 Pflanzen? Das System ist so aufgebaut, dass du nicht benötigte Pflanzen einfach in der Konfiguration auskommentieren kannst, um Bauteile und ESP-Ressourcen zu sparen.
+Modulare **Bewässerungssteuerung für bis zu zehn Pflanzen** mit ESP8266 und ESPHome. Ein CD74HC4067 liest die Feuchtesensoren aus; zwei SN74HC595 und AO3400-MOSFETs steuern die Pumpen.
 
-  > **💡 Funktionsweise:** Das System liest nacheinander die Feuchtigkeitswerte der 10 Sensoren über den Multiplexer ein. Unterschreitet eine Pflanze die definierte Trocken-Schwelle im gewählten Zeitintervall, triggert der ESP8266 über die Schieberegister automatisch den MOSFET der passenden Pumpe und gießt exakt die eingestellte Milliliter-Menge.
+<p align="center"><img src="ip.png" alt="Insane Plants" width="300"></p>
 
----
+## Funktionen
 
-## 🛒 Einkaufsliste & Bauteile (BOM)
+- Feuchteschwelle, Gießmenge, Pumpenkalibrierung und Prüfintervall je Pflanze.
+- Zeitbasierte Dosierung aus gemessenem Pumpendurchfluss und globalem Saisonfaktor.
+- Wassertank-Eingang, der vor einem automatischen Gießvorgang geprüft wird.
+- Zehn-Sekunden-Kalibriertest und eine Pumpenabschaltung nach 60 Sekunden in der GPIO-Schalterautomation.
+- Optionaler DS18B20 sowie Anzeigen für letzte Gießung und nächste Prüfung.
 
-### 🧠 Mikrocontroller & Logik-ICs
-| Bauteil / Bezeichnung | Menge | Beschreibung |
-| :--- | :--- | :--- |
-| **Wemos D1 Mini** | 1 | Das ESP8266 Mainboard |
-| **CD74HC4067** | 1 | 16-Kanal-Multiplexer zum Auslesen der Sensoren (SOIC-24) |
-| **SN74HC595** | 2 | Schieberegister zur Steuerung der MOSFETs (SOIC-16) |
+## Hardware & Dateien
 
-### ⚡ Leistungselektronik
-| Bauteil / Bezeichnung | Menge | Beschreibung |
-| :--- | :--- | :--- |
-| **AO3400** | 10 | N-Channel MOSFETs als Pumpentreiber |
-| **MP1584** | 1 | Step-Down Konverter Modul (5V Spannungsversorgung) |
+| Bauteil | Anzahl |
+| :--- | :--- |
+| Wemos D1 Mini / ESP8266 | 1 |
+| CD74HC4067 | 1 |
+| SN74HC595 | 2 |
+| AO3400-Pumpentreiber | Bis zu 10 |
+| Kapazitive Feuchtesensoren und 5-V-Pumpen | Je bis zu 10 |
+| DS18B20 | Optional |
 
-### 🧲 Peripherie & Passive Bauteile
-| Bauteil / Bezeichnung | Menge | Beschreibung |
-| :--- | :--- | :--- |
-| **Kapazitiver Sensor** | 10 | Bodenfeuchtesensoren |
-| **5V Wasserpumpe** | 10 | Mini-Tauchpumpen für die Bewässerung |
-| **DS18B20** | 1 | 1-Wire Temperatursensor |
-| **100nF Keramik (1210)**| 5 | Entkopplungskondensatoren für die ICs |
+Fertigungsdaten: [Gerber](Gerber). Konfiguration: [ESPHome/insane-plant.yaml](ESPHome/insane-plant.yaml) und [ESPHome/plant_module.yaml](ESPHome/plant_module.yaml). Die Haupt-YAML dokumentiert Pins und Kanalzuordnungen.
 
----
+## Installation
 
-## 🛠️ Die Schritt-für-Schritt Anleitung
+1. **Beide YAML-Dateien** in denselben ESPHome-Konfigurationsordner kopieren.
+2. Eine eigene `secrets.yaml` mit `api_encryption_key`, `ota_password`, `wifi_ssid`, `wifi_password` und `ap_password` anlegen.
+3. Pin-Substitutionen und Pflanzenpakete prüfen. Nicht benötigte Pflanzen unter `packages` deaktivieren.
+4. Sensoren, Pumpentreiber, Versorgung und Tankschalter passend zur Konfiguration anschließen. Der Tankeingang liegt in diesem Aufbau auf GPIO16.
+5. In ESPHome validieren und kompilieren, den D1 Mini flashen und in Home Assistant hinzufügen.
 
-Jeder kann dieses System bauen. Folge einfach stur diesen Schritten:
+## Kalibrierung & Bedienung
 
-### Schritt 1: Hardware fertigen & löten
-1. Lade die ZIP-Datei aus dem Ordner `Gerber/` bei einem Platinenfertiger deiner Wahl hoch. Das Board nutzt zwei Lagen (Top/Bottom). Alle Toleranzen sind Standard, du brauchst keine teuren Sonderfertigungs-Optionen wählen.
-2. Besorge die nötigen SMD- und THT-Bauteile (siehe BOM).
-3. Löte die Bauteile auf. Beginne mit den flachen SMD-Komponenten (1210-Format) und arbeite dich zu den ICs und THT-Bauteilen vor.
-4. **Wichtig für die Entkopplung:** Achte darauf, die 100nF Kondensatoren so nah wie möglich an den Pins der ICs (Multiplexer, Schieberegister) zu platzieren.
+1. Die Fördermenge jeder Pumpe beim Zehn-Sekunden-Test messen und als **ml pro 10 s** eintragen.
+2. Zielmenge, Feuchteschwelle und Prüfintervall je Pflanze einstellen.
+3. Feuchtesensoren gegen die eigenen Trocken-/Nasswerte kalibrieren. Die linearen Vorgaben in `plant_module.yaml` müssen zum tatsächlichen Sensor passen.
+4. Mit Saisonfaktor **1,0** beginnen. Die Laufzeit berechnet sich als `Menge / Kalibrierung × 10 s × Saisonfaktor`.
+5. Tankschalter testen und die ersten vollständigen Gießvorgänge beaufsichtigen.
 
-### Schritt 2: ESPHome vorbereiten
-Aus Sicherheitsgründen nutzt dieses Projekt ausgelagerte Passwörter.
-1. Erstelle in deinem Home Assistant / ESPHome-Ordner eine neue Datei namens `secrets.yaml`.
-2. Füge exakt diese Struktur mit deinen eigenen, echten Daten ein:
-   ```yaml
-   api_encryption_key: "DEIN_API_KEY"
-   ota_password: "DEIN_OTA_PASSWORD"
-   wifi_ssid: "DEIN_WLAN_NAME"
-   wifi_password: "DEIN_WLAN_PASSWORT"
-   ap_password: "DEIN_FALLBACK_HOTSPOT_PASSWORT"
-   ```
-3. Kopiere die Hauptdatei `insane-plant.yaml` sowie die Modul-Schablone `plant_module.yaml` aus dem Ordner `ESPHome/` in deinen ESPHome-Konfigurationsordner.
+Das System besitzt keinen Durchflussmesser: Die Menge wird aus der kalibrierten Laufzeit geschätzt. Die 60-Sekunden-Abschaltung kann einen länger berechneten Vorgang verkürzen; wähle passende Einstellungen. Der Tanksensor wird am Start des Gießskripts geprüft, nicht dort fortlaufend während der Dosis überwacht.
 
-   > **💡 Setup-Tipp:** Wenn du weniger als 10 Pflanzen gießen möchtest, kannst du die nicht benötigten Pflanzen in der Datei `insane-plant.yaml` unter dem Punkt `packages:` durch ein vorangestelltes `#` einfach auskommentieren.
-4. Binde den Wemos D1 Mini in dein ESPHome Dashboard ein.
-5. Flashe das Board. Das System generiert nun automatisch alle Steuerelemente in Home Assistant.
+## Fehlersuche
 
-### Schritt 3: Verkabelung & Erster Start
-1. **Sensoren:** Schließe deine kapazitiven Bodenfeuchtesensoren an die entsprechenden Eingänge an.
-2. **Pumpen:** Verbinde deine 10 Wasserpumpen (5V) mit den MOSFET-Ausgängen.
-3. **Temperatur (Optional):** Schließe den DS18B20 Temperatursensor (One-Wire) an.
-4. **Power On:** Verbinde das 5V Netzteil mit der Platine.
+- **Es wird nicht gegossen:** Tankzustand, positive Kalibrierung/Menge, Feuchteschwelle und abgelaufenes Prüfintervall prüfen.
+- **Falsche Menge:** Jede Pumpe mit tatsächlicher Schlauchlänge und Förderhöhe kalibrieren, Saisonfaktor und Laufzeitbegrenzung prüfen.
+- **Falsche Pflanze/Pumpe:** `mux_pin` und `sr_pin` der Pakete mit der Verkabelung abgleichen.
+- **Entitäten fehlen:** `plant_module.yaml` neben der Hauptdatei ablegen und aktivierte Pakete prüfen.
+
+## Lizenz
+
+[CC BY-NC-SA 4.0](LICENSE). Es gilt die bestehende Projektlizenz. Drittanbieter-Komponenten behalten ihre jeweiligen Lizenzen.
 
 ---
 
-## ⚖️ Lizenz
-Dieses komplette Projekt steht unter der [CC BY-NC-SA 4.0 Lizenz](https://creativecommons.org/licenses/by-nc-sa/4.0/). 
-Das bedeutet: Nachbauen und Anpassen für private Zwecke ist ausdrücklich erwünscht, jede kommerzielle Nutzung oder der Verkauf sind strikt verboten!
+## Builds und Releases
 
----
+Version: **1.4.1** ([VERSION](VERSION)). [GitHub Actions](.github/workflows/release.yml) prüft Pushes und Pull Requests. Ein Tag passend zu `v` + `VERSION` veröffentlicht das Release erst nach erfolgreichen Jobs; manuelle Läufe liefern Build-Artefakte. [Downloads](https://github.com/babeinlovexd/Insane-Plants/releases).
 
-## ☕ Support dieses Projekts
-Wenn dir das System gefällt und du meine Arbeit unterstützen möchtest, freue ich mich riesig über einen virtuellen Kaffee!
+ESPHome-CI verwendet Platzhalter-Zugangsdaten und flasht keine Geräte. Vor dem Einsatz eigene Secrets und Pinbelegung prüfen.
 
-<a href="https://www.paypal.me/babeinlovexd">
-  <img src="https://img.shields.io/badge/Donate-PayPal-blue.svg?style=for-the-badge&logo=paypal" alt="Donate mit PayPal">
-</a>
+## Mitmachen
 
-Jeder Cent fließt direkt in neue Projekte und Prototypen! 🚀
----
+Fragen, Fehlerberichte und Beiträge sind willkommen. Nenne Version, Aufbau und Schritte zum Nachstellen im [Issue](https://github.com/babeinlovexd/Insane-Plants/issues). Größere Änderungen besprechen wir am besten vor einem Pull Request.
 
-## 👨‍💻 Entwickelt von
+Dieses Hobbyprojekt unterstützen: [PayPal](https://www.paypal.me/babeinlovexd).
 
-| [<img src="https://avatars.githubusercontent.com/u/43302033?v=4" width="100"><br><sub>**Christopher**</sub>](https://github.com/babeinlovexd) |
-| :---: |
-
----
+[BxD / BabeinlovexD](https://github.com/babeinlovexd) · [Website](https://babeinlovexd.de/)

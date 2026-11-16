@@ -1,103 +1,77 @@
-# 🌿 Insane Plant
+<p align="center">
+  <a href="https://github.com/babeinlovexd"><img src="https://raw.githubusercontent.com/babeinlovexd/babeinlovexd/main/bxd-github-header.svg" width="520" alt="BxD / BabeinlovexD"></a>
+</p>
 
-[🇩🇪 Deutsche Version](README.md)
+# Insane Plants
 
-Welcome to **Insane Plant**! This is a compact 10-channel irrigation controller based on the ESP8266 (Wemos D1 Mini). The system captures soil moisture from 10 capacitive sensors via a hardware multiplexer and controls 10 independent 5V pumps using two shift registers and MOSFETs. Everything is integrated onto a custom PCB, designed for a stable power supply to the pumps.
+[Deutsch](README.md) · [Issues](https://github.com/babeinlovexd/Insane-Plants/issues) · [Releases](https://github.com/babeinlovexd/Insane-Plants/releases)
 
-## ✨ What is Insane Plant? (Hardware & Features)
+A modular **ESP8266 / ESPHome irrigation controller for up to ten plants**. A CD74HC4067 multiplexes moisture sensors; two SN74HC595 shift registers and AO3400 MOSFETs control the pumps.
 
-* **10-Channel Irrigation:** The system can water up to 10 plants completely independently of each other.
-* **Intelligent Sensor Evaluation:** Soil moisture is recorded via 10 capacitive sensors, efficiently read from just one analog input of the ESP8266 using a hardware multiplexer (CD74HC4067).
-* **Powerful Pump Control:** 10 independent 5V submersible pumps are controlled via two shift registers (SN74HC595) and powerful N-channel MOSFETs (AO3400). The circuit is designed for peak loads of up to 3A.
-* **Hand-Soldering Friendly SMD Design:** The board uses the 1210 format for passive components, significantly simplifying hand soldering, even for beginners.
-* **Fully Automatic Logic in ESPHome:** The system utilizes a modular concept in ESPHome. For each plant, controls (water amount, interval, dry threshold, calibration) and smart status sensors (time since last watering & countdown to next check) are automatically generated in Home Assistant.
-* **Temperature Monitoring:** An optional DS18B20 temperature sensor (One-Wire) can be connected directly to the board.
-* **Global Season Scaling:** A global multiplier allows you to adjust the watering amount for all plants simultaneously according to the season (e.g. summer/winter), without having to change each plant individually.
-* **Scalable System:** Do you need fewer than 10 plants? The system is designed so that you can simply comment out unneeded plants in the configuration to save components and ESP resources.
+<p align="center"><img src="ip.png" alt="Insane Plants" width="300"></p>
 
-  > **💡 How it works:** The system sequentially reads the moisture values of the 10 sensors via the multiplexer. If a plant falls below the defined dry threshold within the selected time interval, the ESP8266 automatically triggers the MOSFET of the corresponding pump via the shift registers and waters exactly the set milliliter amount.
+## Features
 
----
+- Independent moisture thresholds, watering amounts, pump calibration and check intervals for each plant.
+- Time-based dosing using measured pump flow and a global seasonal multiplier.
+- Tank-empty input checked before an automatic watering run.
+- Ten-second calibration button and a maximum pump on-time of 60 seconds in the GPIO switch automation.
+- Optional DS18B20 temperature input; time-since-watering and next-check sensors.
 
-## 🛒 Bill of Materials (BOM)
+## Hardware & files
 
-### 🧠 Microcontroller & Logic ICs
-| Component / Designation | Quantity | Description |
-| :--- | :--- | :--- |
-| **Wemos D1 Mini** | 1 | The ESP8266 Mainboard |
-| **CD74HC4067** | 1 | 16-Channel Multiplexer for reading sensors (SOIC-24) |
-| **SN74HC595** | 2 | Shift registers to control MOSFETs (SOIC-16) |
+| Part | Quantity |
+| :--- | :--- |
+| Wemos D1 Mini / ESP8266 | 1 |
+| CD74HC4067 | 1 |
+| SN74HC595 | 2 |
+| AO3400 pump drivers | Up to 10 |
+| Capacitive moisture sensors and 5 V pumps | Up to 10 each |
+| DS18B20 | Optional |
 
-### ⚡ Power Electronics
-| Component / Designation | Quantity | Description |
-| :--- | :--- | :--- |
-| **AO3400** | 10 | N-Channel MOSFETs as pump drivers |
-| **MP1584** | 1 | Step-Down Converter Module (5V power supply) |
+Manufacturing files: [Gerber](Gerber). Configuration: [ESPHome/insane-plant.yaml](ESPHome/insane-plant.yaml) and [ESPHome/plant_module.yaml](ESPHome/plant_module.yaml). The main YAML documents controller pins and assigns pump/multiplexer channels.
 
-### 🧲 Peripherals & Passive Components
-| Component / Designation | Quantity | Description |
-| :--- | :--- | :--- |
-| **Capacitive Sensor** | 10 | Soil moisture sensors |
-| **5V Water Pump** | 10 | Mini submersible pumps for watering |
-| **DS18B20** | 1 | 1-Wire temperature sensor |
-| **100nF Ceramic (1210)**| 5 | Decoupling capacitors for ICs |
+## Installation
 
----
+1. Copy **both YAML files** into the same ESPHome configuration directory.
+2. Create your own `secrets.yaml` with `api_encryption_key`, `ota_password`, `wifi_ssid`, `wifi_password` and `ap_password`.
+3. Check the pin substitutions and enabled plant packages. Disable unused plant entries under `packages`.
+4. Wire sensors, pump drivers, power and the tank switch to match the configuration. The tank input is on GPIO16 in this setup.
+5. Validate and compile in ESPHome, flash the D1 Mini and add it to Home Assistant.
 
-## 🛠️ Step-by-Step Instructions
+## Calibration & operation
 
-Anyone can build this system. Just follow these steps strictly:
+1. Measure a pump's delivery during the ten-second test and enter the result as **ml per 10 s**.
+2. Set target amount, moisture threshold and checking interval for each plant.
+3. Check moisture calibration against dry/wet readings for the actual sensors. The supplied linear values in `plant_module.yaml` are starting values to review, not a calibration for every sensor.
+4. Start with seasonal multiplier **1.0**. The calculated duration is `amount / calibration × 10 s × seasonal multiplier`.
+5. Test the tank switch and supervise the first full cycle.
 
-### Step 1: Manufacture & Solder Hardware
-1. Upload the ZIP file from the `Gerber/` folder to a PCB manufacturer of your choice. The board uses two layers (Top/Bottom). All tolerances are standard; no expensive custom manufacturing options are needed.
-2. Get the necessary SMD and THT components (see BOM).
-3. Solder the components on. Start with the flat SMD components (1210 format) and work your way up to the ICs and THT components.
-4. **Important for decoupling:** Make sure to place the 100nF capacitors as close as possible to the pins of the ICs (multiplexer, shift registers).
+There is no flow meter: amounts are estimates from calibrated runtime. The 60-second cutoff can shorten a long requested run; choose settings that fit within it. The tank input is checked at the start of the watering script; continuous tank monitoring during a running dose is not implemented there.
 
-### Step 2: Prepare ESPHome
-For security reasons, this project uses externalized passwords.
-1. Create a new file named `secrets.yaml` in your Home Assistant / ESPHome folder.
-2. Insert exactly this structure with your own, real data:
-   ```yaml
-   api_encryption_key: "YOUR_API_KEY"
-   ota_password: "YOUR_OTA_PASSWORD"
-   wifi_ssid: "YOUR_WIFI_NAME"
-   wifi_password: "YOUR_WIFI_PASSWORD"
-   ap_password: "YOUR_FALLBACK_HOTSPOT_PASSWORD"
-   ```
-3. Copy the main file `insane-plant.yaml` as well as the module template `plant_module.yaml` from the `ESPHome/` folder into your ESPHome configuration folder.
+## Troubleshooting
 
-   > **💡 Setup Tip:** If you want to water fewer than 10 plants, you can easily comment out the unneeded plants in the `insane-plant.yaml` file under the `packages:` section by adding a `#` in front of them.
-4. Add the Wemos D1 Mini to your ESPHome Dashboard.
-5. Flash the board. The system will now automatically generate all controls in Home Assistant.
+- **No watering:** Check tank-empty state, positive calibration/amount, moisture threshold and elapsed checking interval.
+- **Incorrect amount:** Recalibrate each pump with the actual tubing and height, and check the seasonal multiplier/runtime cutoff.
+- **Wrong plant/pump:** Compare package `mux_pin` and `sr_pin` assignments to the wiring.
+- **Missing entities:** Ensure `plant_module.yaml` is beside the main file and enabled packages are valid.
 
-### Step 3: Wiring & First Start
-1. **Sensors:** Connect your capacitive soil moisture sensors to the corresponding inputs.
-2. **Pumps:** Connect your 10 water pumps (5V) to the MOSFET outputs.
-3. **Temperature (Optional):** Connect the DS18B20 temperature sensor (One-Wire).
-4. **Power On:** Connect the 5V power supply to the board.
+## License
+
+[CC BY-NC-SA 4.0](LICENSE). The existing project license applies; third-party components retain their own licenses.
 
 ---
 
-## ⚖️ License
-This entire project is licensed under the [CC BY-NC-SA 4.0 License](https://creativecommons.org/licenses/by-nc-sa/4.0/).
-This means: Rebuilding and modifying for private purposes is explicitly desired; any commercial use or sale is strictly prohibited!
+## Builds and releases
 
----
+Version: **1.4.1** ([VERSION](VERSION)). [GitHub Actions](.github/workflows/release.yml) checks each push and pull request. A tag matching `v` + `VERSION` publishes a release after all jobs succeed; manual runs provide build artifacts. [Downloads](https://github.com/babeinlovexd/Insane-Plants/releases).
 
-## ☕ Support this Project
-If you like the system and want to support my work, I would be absolutely thrilled about a virtual coffee!
+ESPHome CI uses dummy credentials and does not flash devices. Configure your own secrets and pin assignments before deployment.
 
-<a href="https://www.paypal.me/babeinlovexd">
-  <img src="https://img.shields.io/badge/Donate-PayPal-blue.svg?style=for-the-badge&logo=paypal" alt="Donate with PayPal">
-</a>
+## Contributing
 
-Every cent flows directly into new projects and prototypes! 🚀
----
+Questions, bug reports and contributions are welcome. Include version, setup and reproduction steps in an [Issue](https://github.com/babeinlovexd/Insane-Plants/issues). Please discuss larger changes before a pull request.
 
-## 👨‍💻 Developed by
+Support this hobby project: [PayPal](https://www.paypal.me/babeinlovexd).
 
-| [<img src="https://avatars.githubusercontent.com/u/43302033?v=4" width="100"><br><sub>**Christopher**</sub>](https://github.com/babeinlovexd) |
-| :---: |
-
----
+[BxD / BabeinlovexD](https://github.com/babeinlovexd) · [Website](https://babeinlovexd.de/)
